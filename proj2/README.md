@@ -1,64 +1,86 @@
-# Implementace algoritmu "Pipeline merge sort"=
-Pomocí knihovny Open MPI implementujte v jazyce C/C++ algoritmus Pipeline-Merge sort tak, jak byl uveden na přednášce PRL.
+# Mesh Multiplication=
+Pomocí knihovny Open MPI implementujte v jazyce '''C++''' algoritmus Mesh Multiplication.
 
-## Deadline==
-9. 4. 2021
+## Vstup a výstup==
+Vstupem jsou textové soubory mat1 a mat2. 
 
-## Vstup==
-Vstupem je posloupnost šestnácti náhodných čísel uložených v souboru.
+Výsledná matice, která je získána operací mat1*mat2, bude vypsána na standardní výstup ve formátu specifikovaném níže.
 
-### Soubor numbers===
-Soubor ''numbers'' obsahující čísla velikosti 1 byte, která jdou bez mezery za sebou. Pro příklad vytvoření tohoto souboru prostudujte soubor ''test'' (sekce  [[PRL:1. Projekt#ukázkové zdrojové kódy]]), ve kterém je ukázáno vytvoření takovéto posloupnosti náhodných čísel a její uložení do souboru pomocí utility ''dd''. V případě tohoto projektu nastavíte "numbers" napevno na 16. Tato utilita generuje náhodná čísla v rozsahu určeném velikostí bloku. Při bloku 1B jsou hodnoty v rozsahu 0-255. Vygenerovaná čísla jsou pak přesměrována do souboru. Vznikne tedy další soubor s náhodnými znaky jdoucími bez mezery za sebou. Po otevření v libovolném textovém editoru se hodnoty tváří jako náhodné ascii znaky, které by však měly být chápany jako celá čísla. Soubor je v tomto případě chápan jako binární.
+Jako oddělovač čísel na řádku použijte mezeru (na vstupu i výstupu), jako oddělovač jednotlivých řádků pak znak nového řádku "\n".
+### mat1===
+První řádek mat1 obsahuje počet řádků.
+```
+3
+1 -1
+2  2
+3  3
+```
 
-## Výstup==
-Výstup na ''stdout'' se skládá ze dvou částí:
-+ Jednotlivé načtené neseřazené hodnoty v jednom řádku oddělené mezerou (vypsat po načtení prvním procesorem).
-+ Jednotlivé seřazené hodnoty oddělené novým řádkem (od nejmenšího po největší).
+### mat2===
+První řádek mat2 udává počet sloupců.
+```
+4
+1  -2 -2 -8
+-1 -2  7  10
+```
+
+### Výstup obecně===
+```
+a b c
+d e f
+g h i
+```
 
 ### Příklad výstupu===
-
- <code>4 68 1 54 ... </code>
- <code>1</code>
- <code>4</code>
- <code>54</code>
- <code>68</code>
- ...
+```
+2:3 
+1 2 3
+4 5 6
+```
 
 ## Postup==
-Vytvořte testovací skript ''test'', který bude řídit testování. Tento skript bude mít tyto vlastnosti:
-* Bude pojmenován ''test'' nebo ''test.sh''.
+### test.sh ===
 
+<syntaxhighlight lang="bash">
+#!/bin/bash
 
-Skript vytvoří soubor ''numbers'' s 16ti náhodnými čísly a následně spustí program se správným počtem procesorů. Skript nakonec smaže vytvořenou binárku a soubor ''numbers''. Vzhledem ke strojové kontrole výsledků se v odevzdané verzi kódu '''nebudou vyskytovat žádné jiné výstupy''' než uvedené a ze stejných důvodů je třeba dodržet výše uvedené body týkající se testovacího skriptu. Za nedodržení těchto požadavků budou strhávány body.
+mat1=$(head -n1 mat1)
+mat2=$(head -n1 mat2)
 
-## Implementace==
-Algoritmus implementujte v jazyce C/C++ pomocí knihovny Open MPI.
+cpus=$((mat1*mat2))
 
+mpic++ --prefix /usr/local/share/OpenMPI -o mm mm.cpp -std=c++0x
+mpirun --prefix /usr/local/share/OpenMPI -np $cpus mm
+rm -f mm
+</syntaxhighlight>
+
+Užijte dodaný skript test.sh. Výsledný '''program nebude přijímat žádné parametry''' (jména souborů s maticemi zná a nic více nepotřebuje, načítání velikosti matic řešte v programu).
 
 ## Dokumentace==
-Součástí řešení je dokumentace, která bude o rozsahu '''maximálně 3 strany''' (rozumné a odůvodněné překročení limitu stran není důvod k bodové srážce) funkčního textu.
+*Obdobné jako v 1. projektu 
+*Hodnotí se i vzhled a jazyková úroveň.
+*Obvyklý rozsah 3 strany (nepište zadání, úvodní stranu, obsah, pseudokódy).
 
-Do dokumentace '''nedávejte''':
-* Úvodní stranu, obsah, popis zadání.
 
-V dokumentaci '''popište''':
-* Rozbor a analýzu algoritmu, odvoďte jeho teoretickou složitost (časovou a prostorovou složitost, celkovou cenu). Uvedené vzorce slovně popište, včetně jejich proměnných.
-* Implementaci.
-* Komunikační protokol, jak si "procesy" zasílají zprávy. Pro vizualizaci použijte sekvenční diagram ([http://en.wikipedia.org/wiki/Sequence_diagram]). Nezapomeňte, že protokol musí být obecný, tedy pro ''n'' procesů.
-* Závěr, ve kterém zhodnotíte dosažené výsledky.
-* Pozor, hodnotí se i to, jak dokumentace působí! (Zejména vzhled, správná čeština/slovenština/angličtina.)
+### Obsah===
+*Rozbor a analýza algoritmu Mesh Multiplication, teoretická složitost - prostorová, časová náročnost a cena, sekvenční diagram (popis zasílání zpráv mezi procesy - jednoduchý a obecný).
+*Experimenty s různě velkými maticemi pro ověření časové složitosti (očekává se graf, nikoliv tabulka), nikoliv měření počtu kroků algoritmu
+*Graf - osa x (vodorovná) bude počet procesorů/prvků a osa y (svislá) bude čas, pozor na měřítka obou os, graf bude mít popisky os a bude z něj na první pohled zřejmý závěr
+*Závěr - zhodnocení experimentů, zamyšlení nad reálnou složitostí.
 
-Knihovna Open MPI je navržena na praktické použití, proto neobsahuje žádné implicitní metody pro měření složitosti algoritmů. Je tedy třeba vymyslet nějaký explicitní způsob jejího měření a ten pak co nejdetailněji popsat v dokumentaci!
+## Implementace==
+*'''C++ (přeložitelné pomocí mpic++ kvůli jednotnému skriptu test.sh, ne nutně objektově)'''
+*Open MPI
+*nic jiného
 
 ## Odevzdání==
-Do wisu se odevzdává jeden archiv xlogin00.{tar|tgz|zip}, který bude velký do 1MB, a který obsahuje:
-* zdrojový kód- pms.{c|cpp},
-* hlavička- pms.h (pokud ji využijete),
-* testovací shellový skript- {test|test.sh},
-* dokumentaci- xlogin00.pdf,
-* nic jiného...
+Do WISu se odevzdává jeden archiv xlogin00.{tar|tgz|zip}, který nepřesáhne 1MB a obsahuje:
+* zdrojový kód: mm.cpp
+* hlavička: mm.h (pokud ji využijete) 
+* dokumentaci: xlogin00.pdf 
+* nic jiného (binárky, obrázky, matice, test[.sh], ...) 
 
-
-Platí, že kvalita každé z části vzhledem k požadavkům má vliv na bodové ohodnocení . Počítejte s tím, že veškerá uvedená jména souborů jsou ''case sensitive''.
-
-
+## Doplňkové informace==
+*Výstupy programu budou strojově kontrolovány, mějte to prosím na paměti při implementaci.
+*Budou testovány především korektní vstupy.
+*Při implementaci se zaměřte zejména na důkladné pochopení toho, jak algoritmus funguje a co jednotlivé procesy dělají.
